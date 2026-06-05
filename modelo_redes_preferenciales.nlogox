@@ -3,10 +3,6 @@
   <code><![CDATA[globals [
   pref-A
   pref-B
-  men-pref-A
-  men-pref-B
-  women-pref-A
-  women-pref-B
   ;pairs-per-tick
   ;influence-type
   ;total-ticks
@@ -16,7 +12,6 @@
 
 turtles-own [
   opinion
-  sex
 ]
 
 to setup
@@ -30,7 +25,6 @@ to setup
     sprout 1
   ]
   
-  initial-sex ; 514 hombres, 556 mujeres
   initial-opinions
   update-colors
   update-preferences
@@ -40,14 +34,6 @@ end
 to go
   ask n-of pairs-per-tick turtles [
     let other-turtle one-of other turtles
-    
-    if axelrod-interaction [
-      if sex != [sex] of other-turtle [
-        if ( random-float 1 ) < 0 [
-          stop
-        ]
-      ]
-    ]
     
     (if-else
       influence-type = "pos" [ interact-pos other-turtle ]
@@ -117,29 +103,12 @@ to interact-bc [target]
   ]
 end
 
-to initial-sex
-  ask turtles [
-    set sex 1 ; Sexo 1 se refiere a mujer, sexo 2 se refiere a hombre. Esto para facilitar comparacion
-  ]
-  ask n-of 514 turtles [
-    set sex 2 ; 514 tortugas tienen sexo hombre, correspondiente al 48% del total.
-  ]
-end
-
 to initial-opinions
-ask turtles [set opinion 1000] ; Inicio dando una opinion dummy a todos los agentes
-  ; Resulta mas eficaz calcular los numeros de forma explicita, en vez de hacer calculos en NetLogo
-  ask n-of 211 turtles with [sex = 2] [ ; Le damos opinion a los hombres
-    set opinion random-float -1
-  ]
-  ask n-of 303 turtles with [opinion = 1000 and sex = 2] [
+  ask turtles[
     set opinion random-float 1
   ]
-  ask n-of 212 turtles with [sex = 1] [ ; Le damos opinion a las mujeres
+  ask n-of ( (39 / 100) * (count turtles) ) turtles [
     set opinion random-float -1
-  ]
-  ask n-of 344 turtles with [opinion = 1000 and sex = 1] [
-    set opinion random-float 1
   ]
 end
 
@@ -154,38 +123,14 @@ end
 to update-preferences
   set pref-A (count turtles with [opinion > 0])
   set pref-B (count turtles with [opinion < 0])
-  set men-pref-A (count turtles with [sex = 2 and opinion > 0])
-  set men-pref-B (count turtles with [sex = 2 and opinion < 0])
-  set women-pref-A (count turtles with [sex = 1 and opinion > 0])
-  set women-pref-B (count turtles with [sex = 1 and opinion < 0])
 end
 
-
-;; Reporters 
 to-report percentage-A
-  report precision ( (pref-A / 1070) * 100 ) 2
+  report (pref-A / count turtles) * 100
 end
 
 to-report percentage-B
-  report precision ( (pref-B / 1070) * 100 ) 2
-end
-
-to-report men-percentage-A
-  report precision ( (men-pref-A / 514) * 100 ) 2
-end
-
-
-to-report women-percentage-A
-  report precision ( (women-pref-A / 556) * 100 ) 2
-end
-
-to-report men-percentage-B
-  report precision ( (men-pref-B / 514) * 100 ) 2
-end
-
-
-to-report women-percentage-B
-  report precision ( (women-pref-B / 556) * 100 ) 2
+  report (pref-B / count turtles) * 100
 end]]></code>
   <widgets>
     <view x="368" wrappingAllowedX="true" y="10" frameRate="30.0" minPycor="-16" height="434" showTickCounter="true" patchSize="13.0" fontSize="10" wrappingAllowedY="true" width="434" tickCounterLabel="ticks" maxPycor="16" updateMode="1" maxPxcor="16" minPxcor="-16"></view>
@@ -201,19 +146,7 @@ end]]></code>
     <slider x="45" step="0.01" y="75" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.8" variable="confidence-threshold"></slider>
     <slider x="45" step="1" y="190" max="50" width="250" display="pairs-per-tick" height="50" min="1" direction="Horizontal" default="50.0" variable="pairs-per-tick"></slider>
     <slider x="45" step="0.01" y="133" max="0.5" width="250" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.25" variable="learning-rate"></slider>
-    <plot x="855" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="15" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="General preference over time">
-      <setup></setup>
-      <update></update>
-      <pen interval="1.0" mode="0" display="default" color="-5298144" legend="true">
-        <setup></setup>
-        <update>plot percentage-A</update>
-      </pen>
-      <pen interval="1.0" mode="0" display="pen-1" color="-13345367" legend="true">
-        <setup></setup>
-        <update>plot percentage-B</update>
-      </pen>
-    </plot>
-    <plot x="1140" autoPlotX="true" yMax="1.0" autoPlotY="true" yAxis="Opinion" y="15" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="-1.0" width="330" xAxis="Ticks" display="Opinions over time">
+    <plot x="830" autoPlotX="true" yMax="1.0" autoPlotY="true" yAxis="Opinion" y="235" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="-1.0" width="330" xAxis="Ticks" display="Opinions over time">
       <setup></setup>
       <update></update>
       <pen interval="1.0" mode="2" display="default" color="-16777216" legend="true">
@@ -224,31 +157,18 @@ end]]></code>
 ]</update>
       </pen>
     </plot>
-    <plot x="855" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of men" y="255" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="Preference for men over time">
+    <plot x="45" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="250" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="General preference over time">
       <setup></setup>
       <update></update>
-      <pen interval="1.0" mode="0" display="default" color="-5298144" legend="true">
+      <pen interval="1.0" mode="0" display="percentage-A" color="-5298144" legend="true">
         <setup></setup>
-        <update>plot men-percentage-A</update>
+        <update>plot percentage-A</update>
       </pen>
-      <pen interval="1.0" mode="0" display="pen-1" color="-13345367" legend="true">
+      <pen interval="1.0" mode="0" display="percentage-B" color="-13345367" legend="true">
         <setup></setup>
-        <update>plot men-percentage-B</update>
-      </pen>
-    </plot>
-    <plot x="1170" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of women" y="250" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="Preference for women over time">
-      <setup></setup>
-      <update></update>
-      <pen interval="1.0" mode="0" display="default" color="-5298144" legend="true">
-        <setup></setup>
-        <update>plot women-percentage-A</update>
-      </pen>
-      <pen interval="1.0" mode="0" display="pen-1" color="-13345367" legend="true">
-        <setup></setup>
-        <update>plot women-percentage-B</update>
+        <update>plot percentage-B</update>
       </pen>
     </plot>
-    <switch x="45" y="255" height="40" on="true" variable="axelrod-interaction" width="135" display="axelrod-interaction"></switch>
   </widgets>
   <info>## WHAT IS IT?
 
