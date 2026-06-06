@@ -3,6 +3,7 @@
   <code><![CDATA[globals [
   pref-A
   pref-B
+  highlighted-turtle
   ;pairs-per-tick
   ;influence-type
   ;total-ticks
@@ -26,6 +27,7 @@ to setup
   ]
   
   initial-opinions
+  create-network
   update-colors
   update-preferences
   reset-ticks
@@ -33,7 +35,7 @@ end
 
 to go
   ask n-of pairs-per-tick turtles [
-    let other-turtle one-of other turtles
+    let other-turtle one-of link-neighbors
     
     (if-else
       influence-type = "pos" [ interact-pos other-turtle ]
@@ -112,6 +114,86 @@ to initial-opinions
   ]
 end
 
+to create-network
+  let partner nobody
+  let first-node one-of turtles
+  let second-node one-of turtles with [self != first-node]
+  ;; make the first edge
+  ask first-node [ create-link-with second-node [hide-link]]
+  ;; randomly select unattached node to add to network
+  let new-node one-of turtles with [not any? link-neighbors]
+  ;; and connect it to a partner already in the network
+  while [new-node != nobody] [
+    set partner find-partner
+    ask new-node [ create-link-with partner [hide-link] ]
+    set new-node one-of turtles with [not any? link-neighbors]
+  ]
+end
+
+to-report find-partner
+  let pick random-float sum [count link-neighbors] of (turtles with [any? link-neighbors])
+  let partner nobody
+  ask turtles
+  [ ;; if there's no winner yet
+    if partner = nobody
+    [ ifelse count link-neighbors > pick
+      [ set partner self]
+      [ set pick pick - (count link-neighbors)]
+    ]
+  ]
+  report partner
+end
+
+to show-neighbors
+  ifelse mouse-inside? [
+    ;; Encuentra la tortuga más cercana al mouse
+    let candidate min-one-of turtles [distancexy mouse-xcor mouse-ycor]
+    
+    ;; Verifica si el mouse está realmente encima de la tortuga (distancia < 1)
+    ifelse candidate != nobody and [distancexy mouse-xcor mouse-ycor] of candidate < 1 
+    [
+      ;; Si el mouse está sobre una tortuga NUEVA, actualizamos
+      if candidate != highlighted-turtle [
+        undo-highlight
+        set highlighted-turtle candidate
+        do-highlight candidate
+      ]
+    ]
+    [
+      ;; Si el mouse está en un espacio vacío, limpiamos la selección
+      if highlighted-turtle != nobody [
+        undo-highlight
+        set highlighted-turtle nobody
+      ]
+    ]
+  ]
+  [undo-highlight]
+  display
+end
+
+to do-highlight [ target-node ]
+  ask target-node [
+    ;; Opcional: hacemos un poco más grande a la tortuga central para no perderla
+    set size 1.5 
+    ;; Mostramos SUS links y los hacemos visibles (ej. grises o blancos)
+    ask my-links [ 
+      show-link 
+      set color white 
+      set thickness 0.1 
+    ] 
+    ;; Opcional: resaltamos ligeramente a sus vecinos
+    ask link-neighbors [
+      set size 1.2
+    ]
+  ]
+end
+
+to undo-highlight
+  ;; Volvemos a ocultar todos los links
+  ask links [ hide-link ]
+  ;; Restauramos el tamaño normal de todas las tortugas (asumiendo que tu tamaño base es 1)
+  ask turtles [ set size 1 ]
+end
 
 to update-colors ; Cambio de color de acuerdo a la opinion
   ask turtles [ if-else opinion > 0
@@ -169,6 +251,7 @@ end]]></code>
         <update>plot percentage-B</update>
       </pen>
     </plot>
+    <button x="875" y="25" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="121">show-neighbors</button>
   </widgets>
   <info>## WHAT IS IT?
 
