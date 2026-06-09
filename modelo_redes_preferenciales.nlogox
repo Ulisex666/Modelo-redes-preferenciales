@@ -4,6 +4,8 @@
   pref-A
   pref-B
   highlighted-turtle
+  total-males
+  total-females
   ;pairs-per-tick
   ;influence-type
   ;total-ticks
@@ -13,11 +15,14 @@
 
 turtles-own [
   opinion
+  sex
 ]
 
 to setup
   ; Inicio del modelo. Se asigna forma de personas a las tortugas
   clear-all
+  set total-males 513
+  set total-females 557
   set-default-shape turtles "person"
   ask patches [set pcolor gray]
   
@@ -26,6 +31,7 @@ to setup
     sprout 1
   ]
   
+  initial-sex
   initial-opinions
   create-network
   update-colors
@@ -105,12 +111,26 @@ to interact-bc [target]
   ]
 end
 
-to initial-opinions
-  ask turtles[
+to initial-sex ; Sexo inicial en base a los valores obtenidos en la encuesta
+  ask turtles [set sex "F"] ; Se les pide a todas las tortugas que se asigen el sexo femenino
+  ask n-of total-males turtles [ ; Ahora, se les pide al 48% que se asignen el sexo hombre
+    set sex "M"
+  ]
+end
+
+to initial-opinions ; Opiniones inicales basadas en la primera encuesta considerada
+  ask turtles[set opinion 1000] ; Opinion inicial dummy para los agentes
+  ask n-of 210 turtles with [sex = "M"] [ ; Le damos opinion a los hombres
+    set opinion random-float -1
+  ]
+  ask n-of 303 turtles with [opinion = 1000 and sex = "M"] [
     set opinion random-float 1
   ]
-  ask n-of ( (39 / 100) * (count turtles) ) turtles [
+  ask n-of 212 turtles with [sex = "F"] [ ; Le damos opinion a las mujeres
     set opinion random-float -1
+  ]
+  ask n-of 345 turtles with [opinion = 1000 and sex = "F"] [
+    set opinion random-float 1
   ]
 end
 
@@ -209,38 +229,72 @@ to update-preferences
   set pref-B (count turtles with [opinion < 0])
 end
 
+
+;; Reporters para estadisticas que se van a medir en el modelo
 to-report percentage-A
   report (pref-A / count turtles) * 100
 end
 
 to-report percentage-B
   report (pref-B / count turtles) * 100
+end
+
+; Conteo de preferencias por sexo, sin considerar porcentajes
+to-report male-pref-A
+  report count turtles with [opinion > 0 and (sex = "M") ]
+end
+
+to-report female-pref-A
+  report count turtles with [opinion > 0 and (sex = "F") ]
+end
+
+to-report male-pref-B
+  report count turtles with [opinion < 0 and (sex = "M") ]
+end
+
+to-report female-pref-B
+  report count turtles with [opinion < 0 and (sex = "F") ]
+end
+
+; Conteo de preferencias por sexo, en porcentajes
+to-report male-percentage-A
+  report ( male-pref-A / total-males ) * 100
+end
+
+to-report female-percentage-A
+  report  ( female-pref-A / total-males ) * 100
+end
+
+to-report male-percentage-B
+  report ( male-pref-B / total-males ) * 100
+end
+
+to-report female-percentage-B
+  report ( female-pref-B / total-males ) * 100
+end
+
+; Reporters para las OPINIONES. Utilizados para experimentos en el behavior space
+to-report mean-opinion
+  report mean [opinion] of turtles
+end
+
+to-report sd-opinion
+  report standard-deviation [opinion] of turtles
 end]]></code>
   <widgets>
     <view x="368" wrappingAllowedX="true" y="10" frameRate="30.0" minPycor="-16" height="434" showTickCounter="true" patchSize="13.0" fontSize="10" wrappingAllowedY="true" width="434" tickCounterLabel="ticks" maxPycor="16" updateMode="1" maxPxcor="16" minPxcor="-16"></view>
     <button x="10" y="20" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55" display="setup">setup</button>
     <button x="77" y="20" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55" display="go">go
 </button>
-    <chooser x="144" y="10" height="60" variable="influence-type" current="1" width="100" display="influence-type">
+    <chooser x="144" y="10" height="60" variable="influence-type" current="2" width="100" display="influence-type">
       <choice type="string" value="pos"></choice>
       <choice type="string" value="neg"></choice>
       <choice type="string" value="bc"></choice>
     </chooser>
     <input x="255" multiline="false" y="10" height="60" variable="total-ticks" type="number" width="100">260.0</input>
     <slider x="45" step="0.01" y="75" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.71" variable="confidence-threshold"></slider>
-    <slider x="45" step="1" y="190" max="50" width="250" display="pairs-per-tick" height="50" min="1" direction="Horizontal" default="50.0" variable="pairs-per-tick"></slider>
-    <slider x="45" step="0.01" y="133" max="0.5" width="250" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.5" variable="learning-rate"></slider>
-    <plot x="830" autoPlotX="true" yMax="1.0" autoPlotY="true" yAxis="Opinion" y="235" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="-1.0" width="330" xAxis="Ticks" display="Opinions over time">
-      <setup></setup>
-      <update></update>
-      <pen interval="1.0" mode="2" display="default" color="-16777216" legend="true">
-        <setup></setup>
-        <update>if ticks mod 5 = 0 [
-  ask turtles [
-  plotxy ticks opinion ]
-]</update>
-      </pen>
-    </plot>
+    <slider x="45" step="1" y="190" max="50" width="250" display="pairs-per-tick" height="50" min="1" direction="Horizontal" default="23.0" variable="pairs-per-tick"></slider>
+    <slider x="45" step="0.01" y="133" max="0.5" width="250" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.25" variable="learning-rate"></slider>
     <plot x="45" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="250" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="General preference over time">
       <setup></setup>
       <update></update>
@@ -253,7 +307,42 @@ end]]></code>
         <update>plot percentage-B</update>
       </pen>
     </plot>
-    <button x="875" y="25" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="121">show-neighbors</button>
+    <plot x="815" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="260" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="Preference for males">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="percentage-A" color="-5298144" legend="true">
+        <setup></setup>
+        <update>plot male-percentage-A</update>
+      </pen>
+      <pen interval="1.0" mode="0" display="percentage-B" color="-13345367" legend="true">
+        <setup></setup>
+        <update>plot male-percentage-B</update>
+      </pen>
+    </plot>
+    <plot x="1110" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="260" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="Preference for females">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="0" display="percentage-A" color="-5298144" legend="true">
+        <setup></setup>
+        <update>plot female-percentage-A</update>
+      </pen>
+      <pen interval="1.0" mode="0" display="percentage-B" color="-13345367" legend="true">
+        <setup></setup>
+        <update>plot female-percentage-B</update>
+      </pen>
+    </plot>
+    <button x="825" y="20" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="121">show-neighbors</button>
+    <plot x="1055" autoPlotX="true" yMax="1.0" autoPlotY="true" yAxis="Opinion" y="65" xMin="0.0" height="185" legend="false" xMax="260.0" yMin="-1.0" width="320" xAxis="Ticks" display="Opinions over time">
+      <setup></setup>
+      <update></update>
+      <pen interval="1.0" mode="2" display="default" color="-16777216" legend="true">
+        <setup></setup>
+        <update>if ticks mod 5 = 0 [
+  ask turtles [
+  plotxy ticks opinion ]
+]</update>
+      </pen>
+    </plot>
   </widgets>
   <info>## WHAT IS IT?
 
@@ -1125,4 +1214,27 @@ end]]></code>
     </shape>
   </linkShapes>
   <previewCommands>setup repeat 75 [ go ]</previewCommands>
+  <experiments>
+    <experiment name="experiment-parameters-positive" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="true">
+      <setup>setup</setup>
+      <go>go</go>
+      <metrics>
+        <metric>mean-opinion</metric>
+        <metric>sd-opinion</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="1000"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="10" step="10" last="50"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;pos&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+  </experiments>
 </model>
