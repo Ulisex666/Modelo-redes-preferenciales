@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <model version="NetLogo 7.0.2" snapToGrid="true">
-  <code><![CDATA[globals [
+  <code><![CDATA[extensions [ nw ]
+
+globals [
   pref-A
   pref-B
   highlighted-turtle
@@ -228,6 +230,21 @@ to update-preferences
   set pref-B (count turtles with [opinion < 0])
 end
 
+;; Utilidades para exportar e importar la red generada, de forma que se pueda volver a utilizar
+to export-network 
+  nw:save-graphml "generated_network.graphml"
+  print "Network exported to 'generated_network.graphml'"
+end
+
+to load-network
+  clear-all
+  nw:load-graphml "generated_network.graphml"
+  ask patches [set pcolor gray]
+  update-colors
+  reset-ticks
+  print "Network imported from file 'generated_network.graphml'"
+end
+
 
 ;; Reporters para estadisticas que se van a medir en el modelo
 to-report percentage-A
@@ -285,15 +302,15 @@ end]]></code>
     <button x="10" y="20" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55" display="setup">setup</button>
     <button x="77" y="20" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55" display="go">go
 </button>
-    <chooser x="144" y="10" height="60" variable="influence-type" current="2" width="100" display="influence-type">
+    <chooser x="144" y="10" height="60" variable="influence-type" current="0" width="100" display="influence-type">
       <choice type="string" value="pos"></choice>
       <choice type="string" value="neg"></choice>
       <choice type="string" value="bc"></choice>
     </chooser>
     <input x="255" multiline="false" y="10" height="60" variable="total-ticks" type="number" width="100">260.0</input>
-    <slider x="45" step="0.01" y="75" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.88" variable="confidence-threshold"></slider>
-    <slider x="45" step="1" y="190" max="100" width="250" display="pairs-per-tick" height="50" min="1" direction="Horizontal" default="100.0" variable="pairs-per-tick"></slider>
-    <slider x="45" step="0.01" y="133" max="0.5" width="250" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.08" variable="learning-rate"></slider>
+    <slider x="45" step="0.01" y="75" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.0" variable="confidence-threshold"></slider>
+    <slider x="45" step="1" y="190" max="100" width="250" display="pairs-per-tick" height="50" min="1" direction="Horizontal" default="10.0" variable="pairs-per-tick"></slider>
+    <slider x="45" step="0.01" y="133" max="0.5" width="250" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.5" variable="learning-rate"></slider>
     <plot x="815" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="260" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="Preference for males">
       <setup></setup>
       <update></update>
@@ -346,6 +363,9 @@ end]]></code>
 reset-ticks
 clear-all-plots
 update-colors</button>
+    <button x="970" y="20" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="100">export-network
+</button>
+    <button x="980" y="70" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="90">load-network</button>
   </widgets>
   <info>## WHAT IS IT?
 
