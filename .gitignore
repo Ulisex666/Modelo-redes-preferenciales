@@ -47,3 +47,6 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Bases de datos del proyecto
+experimentos/parametros_y_opiniones/behavior_space_tables

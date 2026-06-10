@@ -6,7 +6,7 @@
 setwd("C:/Users/ulise/Documents/GitHub/Modelo-redes-preferenciales/experimentos/parametros_y_opiniones/")
 library(tidyverse)
 
-positiva_redes_convergencia_table <- read.csv('experiment-parameters-positive-table.csv', skip = 6)
+positiva_redes_convergencia_table <- read.csv('behavior_space_tables/experiment-parameters-positive-table.csv', skip = 6)
 positiva_redes_convergencia_table <- positiva_redes_convergencia_table %>%
   rename(
     tick = X.step., 
