@@ -1,7 +1,16 @@
+### Este script procesa los resultados del experimento confidence-effect-bc del mode
+### de dinamica de opinion utilizando redes preferenciales.
+### Se busca evaluar el efecto del parámetro confidence-threshold en la distribución de opiniones final,
+### ajustando al máximo learning-rate y pairs-per-tick. Se le dio un total de 10,000 ticks al modelo y se
+### grafican los resultados, siendo solamente una repetición por combinación de parámetros
+
+#### Establecer directorio de trabajo y cargar paqueterias necesarias ####
 setwd("C:/Users/ulise/Documents/GitHub/Modelo-redes-preferenciales/experimentos/parametros_y_opiniones/")
 library(tidyverse)
 
-redes_bc_confidence_table <- read.csv("behavior_space_tables/confidence-effect-bc-table.csv", skip = 6)
+#### Lectura y procesamiento de datos ####
+
+# Se leen los datos del experimento y se cambian los nombres de las variables
 redes_bc_confidence_table <- redes_bc_confidence_table %>%
   rename(
     tick = X.step., 
@@ -15,6 +24,7 @@ redes_bc_confidence_table <- redes_bc_confidence_table %>%
     percentage_B = percentage.B
   )
 
+# Se procesan las opiniones, que originalmente se encuentran como una única lista
 redes_bc_confidence_procesada <- redes_bc_confidence_table %>% 
   mutate(opinions_list = str_remove_all(opinions_list, "[\\[\\]]")) %>%
   mutate(opinions_list = str_trim(opinions_list)) %>%
@@ -23,18 +33,24 @@ redes_bc_confidence_procesada <- redes_bc_confidence_table %>%
   mutate(opinion = as.numeric(opinions_list)) %>%
   select(tick, opinion, run_number, percentage_A, percentage_B)
 
+# Se crea un tibble por cada configuración de parámetros, para facilitar su graficación
 tablas_por_run <- redes_bc_confidence_procesada %>%
   group_split(run_number)
 
+# Se calcula la distribución final del voto en el modelo
 df_labels <- redes_bc_confidence_table %>%
   group_by(run_number) %>%
   filter(tick == max(tick)) %>% 
   select(confidence_threshold, percentage_A, percentage_B) %>% 
   arrange(confidence_threshold)
 
+# Se limpian los datos redundantes
 rm(redes_bc_confidence_table)
 rm(redes_bc_confidence_procesada)
 
+#### Graficación de resultados ####
+# Se crea un ciclo for para automitizar las gráficas, que se guardan en el directorio
+# /plots_bc
 for (i in 0:20) {
   
   threshold_val <- i * 0.1

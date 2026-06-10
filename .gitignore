@@ -50,3 +50,4 @@ rsconnect/
 
 # Bases de datos del proyecto
 experimentos/parametros_y_opiniones/behavior_space_tables
+experimentos/patron_primario_eleccion/behavior_space_datos

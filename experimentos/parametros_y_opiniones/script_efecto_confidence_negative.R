@@ -1,6 +1,17 @@
+### Este script procesa los resultados del experimento confidence-effect-negative del mode
+### de dinamica de opinion utilizando redes preferenciales.
+### Se busca evaluar el efecto del parámetro confidence-threshold en la distribución de opiniones final,
+### ajustando al máximo learning-rate y pairs-per-tick. Se le dio un total de 10,000 ticks al modelo y se
+### grafican los resultados, siendo solamente una repetición por combinación de parámetros
+
+
+#### Establecer espacio de trabajo ####
 setwd("C:/Users/ulise/Documents/GitHub/Modelo-redes-preferenciales/experimentos/parametros_y_opiniones/")
 library(tidyverse)
 
+#### Leer y procesar los datos ####
+
+# Se leen los datos y se cambian los nombres de las variables
 redes_negative_confidence_table <- read.csv("behavior_space_tables/confidence-effect-negative-table.csv", skip = 6)
 redes_negative_confidence_table <- redes_negative_confidence_table %>%
   rename(
@@ -15,6 +26,8 @@ redes_negative_confidence_table <- redes_negative_confidence_table %>%
     percentage_B = percentage.B
   )
 
+# Se procesa la tabla, dado que el modelo da una lista de las opiniones cada 5 ticks como un
+# string
 redes_negative_confidence_procesada <- redes_negative_confidence_table %>% 
   mutate(opinions_list = str_remove_all(opinions_list, "[\\[\\]]")) %>%
   mutate(opinions_list = str_trim(opinions_list)) %>%
@@ -23,18 +36,26 @@ redes_negative_confidence_procesada <- redes_negative_confidence_table %>%
   mutate(opinion = as.numeric(opinions_list)) %>%
   select(tick, opinion, run_number, percentage_A, percentage_B)
 
+# Se crea un tibble separado por cada combinación de parámetros, para facilitar su procesamiento
 tablas_por_run <- redes_negative_confidence_procesada %>%
   group_split(run_number)
 
+# Se evalua la distribución final de opiniones
 df_labels <- redes_negative_confidence_table %>%
   group_by(run_number) %>%
   filter(tick == max(tick)) %>% 
   select(confidence_threshold, percentage_A, percentage_B) %>% 
   arrange(confidence_threshold)
 
+# Se eliminan los datos redundantes, para liberar espacio en memoria
 rm(redes_negative_confidence_table)
 rm(redes_negative_confidence_procesada)
 
+
+#### Graficación de los resultados ####
+
+# Se grafican los resultados de la distribución de opiniones, en un ciclo for para automatizar.
+# Las imágenes se guardan en la carpeta /plots_negative
 for (i in 0:20) {
   
   threshold_val <- i * 0.1
