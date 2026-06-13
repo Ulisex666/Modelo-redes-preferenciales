@@ -136,31 +136,37 @@ to initial-opinions ; Opiniones inicales basadas en la primera encuesta consider
   ]
 end
 
+; Rutina para generar red por mecanismo de conexion preferencial
 to create-network
   let partner nobody
+  ; Selecciona a los dos primeros nodos con los que crear un enlace. La red se crea a partir de ellos 
   let first-node one-of turtles
   let second-node one-of turtles with [self != first-node]
-  ;; make the first edge
+  ; El primer enlace se crea entre las dos primeras tortugas seleccionadas
   ask first-node [ create-link-with second-node [hide-link]]
-  ;; randomly select unattached node to add to network
+  ; Se busca entre las tortugas una sin conexion y se procede a buscarle un vecino
   let new-node one-of turtles with [not any? link-neighbors]
-  ;; and connect it to a partner already in the network
+  ; El proceso de agregar vecinos se repite hasta que todos tengan al menos una conexion
   while [new-node != nobody] [
-    set partner find-partner
-    ask new-node [ create-link-with partner [hide-link] ]
-    set new-node one-of turtles with [not any? link-neighbors]
+    set partner find-partner ; Se realiza la rutina para encontrar una pareja que ya tenga al menos una conexion
+    ask new-node [ create-link-with partner [hide-link] ] ; Cuando se encuentra, se crea un enlace entre los dos
+    set new-node one-of turtles with [not any? link-neighbors] ; Se vuelve a buscar una tortuga sin conexiones
   ]
 end
 
+; Subrutina para encontrar una pareja con la que crear la conexion
 to-report find-partner
+  ; Se elige un numero aleatoria, con el maximo siendo el total de enlaces en la red
   let pick random-float sum [count link-neighbors] of (turtles with [any? link-neighbors])
+  ; Se asigna la variable pareja sin valor
   let partner nobody
+  ; Se busca entre todos los agentes en el sistema
   ask turtles
-  [ ;; if there's no winner yet
+  [ ; La busqueda se repite hasta que se encuentra una pareja
     if partner = nobody
-    [ ifelse count link-neighbors > pick
-      [ set partner self]
-      [ set pick pick - (count link-neighbors)]
+    [ ifelse count link-neighbors > pick ; La tortuga elegida tiene mas conexinoes que el numero aleatorio?
+      [ set partner self ] ; Si se cumple, se elige como pareja
+      [ set pick pick - (count link-neighbors)] ; Si no, se resta el total de conexiones del numero aleatorio
     ]
   ]
   report partner
