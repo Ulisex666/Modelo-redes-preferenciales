@@ -45,6 +45,18 @@ to setup
   reset-ticks
 end
 
+to setup-fixed-network [network]
+  clear-all
+  set total-males 513
+  set total-females 557
+  let full-file-name (word "networks/" network ".graphml")
+  nw:load-graphml full-file-name
+  initial-opinions 
+  update-colors
+  update-preferences
+  reset-ticks
+end
+
 to go
   ask n-of pairs-per-tick turtles [
     let other-turtle one-of link-neighbors   
@@ -60,6 +72,14 @@ to go
   tick
   
   if ticks = total-ticks [ stop ] 
+end
+
+to restart-opinions
+  initial-opinions
+  reset-ticks
+  clear-all-plots
+  update-preferences
+  update-colors
 end
 
 to interact-pos [target]
@@ -325,15 +345,15 @@ end]]></code>
     <button x="10" y="20" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="55" display="setup">setup</button>
     <button x="77" y="20" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="55" display="go">go
 </button>
-    <chooser x="144" y="10" height="60" variable="influence-type" current="2" width="100" display="influence-type">
+    <chooser x="144" y="10" height="60" variable="influence-type" current="0" width="100" display="influence-type">
       <choice type="string" value="pos"></choice>
       <choice type="string" value="neg"></choice>
       <choice type="string" value="bc"></choice>
     </chooser>
-    <input x="255" multiline="false" y="10" height="60" variable="total-ticks" type="number" width="100">260.0</input>
-    <slider x="45" step="0.01" y="75" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="0.0" variable="confidence-threshold"></slider>
-    <slider x="45" step="1" y="190" max="100" width="250" display="pairs-per-tick" height="50" min="1" direction="Horizontal" default="100.0" variable="pairs-per-tick"></slider>
-    <slider x="45" step="0.01" y="133" max="0.5" width="250" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.48" variable="learning-rate"></slider>
+    <input x="255" multiline="false" y="10" height="60" variable="total-ticks" type="number" width="100">10000.0</input>
+    <slider x="45" step="0.01" y="75" max="2" width="250" display="confidence-threshold" height="50" min="0" direction="Horizontal" default="2.0" variable="confidence-threshold"></slider>
+    <slider x="45" step="1" y="190" max="100" width="250" display="pairs-per-tick" height="50" min="1" direction="Horizontal" default="50.0" variable="pairs-per-tick"></slider>
+    <slider x="45" step="0.01" y="133" max="0.5" width="250" display="learning-rate" height="50" min="0" direction="Horizontal" default="0.5" variable="learning-rate"></slider>
     <plot x="1110" autoPlotX="true" yMax="100.0" autoPlotY="true" yAxis="% of voters" y="260" xMin="0.0" height="205" legend="false" xMax="260.0" yMin="0.0" width="265" xAxis="Ticks (days)" display="Preference for females">
       <setup></setup>
       <update></update>
@@ -382,14 +402,11 @@ end]]></code>
       </pen>
     </plot>
     <button x="970" y="35" height="40" disableUntilTicks="false" forever="true" kind="Observer" width="121">show-neighbors</button>
-    <chooser x="845" y="35" height="60" variable="network-type" current="0" width="110" display="network-type">
+    <chooser x="845" y="35" height="60" variable="network-type" current="1" width="110" display="network-type">
       <choice type="string" value="preferential"></choice>
       <choice type="string" value="small-world"></choice>
     </chooser>
-    <button x="980" y="80" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="105" display="restart-opinions">initial-opinions
-reset-ticks
-clear-all-plots
-update-colors</button>
+    <button x="980" y="80" height="40" disableUntilTicks="false" forever="false" kind="Observer" width="105" display="restart-opinions">restart-opinions</button>
   </widgets>
   <info>## WHAT IS IT?
 
@@ -1412,6 +1429,142 @@ update-colors</button>
         <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="2"></steppedValueSet>
         <enumeratedValueSet variable="influence-type">
           <value value="&quot;neg&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="main-pattern-negative-fixed-pref" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
+      <setup>setup-fixed-network "fixed-pref-network"</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 0 or ticks = 69 or ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric>percentage-A</metric>
+        <metric>percentage-B</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="10" step="10" last="50"></steppedValueSet>
+        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="2"></steppedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;neg&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="main-pattern-positive-fixed-pref" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
+      <setup>setup-fixed-network "fixed-pref-network"</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 0 or ticks = 69 or ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric>percentage-A</metric>
+        <metric>percentage-B</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="10" step="10" last="50"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;pos&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="main-pattern-bc-fixed-pref" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
+      <setup>setup-fixed-network "fixed-pref-network"</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 0 or ticks = 69 or ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric>percentage-A</metric>
+        <metric>percentage-B</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="10" step="10" last="50"></steppedValueSet>
+        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="2"></steppedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;bc&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="main-pattern-negative-fixed-small-world" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
+      <setup>setup-fixed-network "fixed-small-world"</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 0 or ticks = 69 or ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric>percentage-A</metric>
+        <metric>percentage-B</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="10" step="10" last="50"></steppedValueSet>
+        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="2"></steppedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;neg&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="main-pattern-positive-fixed-small-world" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
+      <setup>setup-fixed-network "fixed-small-world"</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 0 or ticks = 69 or ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric>percentage-A</metric>
+        <metric>percentage-B</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="10" step="10" last="50"></steppedValueSet>
+        <enumeratedValueSet variable="confidence-threshold">
+          <value value="0"></value>
+        </enumeratedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;pos&quot;"></value>
+        </enumeratedValueSet>
+      </constants>
+    </experiment>
+    <experiment name="main-pattern-bc-fixed-small-world" repetitions="30" sequentialRunOrder="false" runMetricsEveryStep="false">
+      <setup>setup-fixed-network "fixed-small-world"</setup>
+      <go>go</go>
+      <runMetricsCondition>ticks = 0 or ticks = 69 or ticks = 166</runMetricsCondition>
+      <metrics>
+        <metric>percentage-A</metric>
+        <metric>percentage-B</metric>
+        <metric>male-percentage-A</metric>
+        <metric>female-percentage-A</metric>
+      </metrics>
+      <constants>
+        <enumeratedValueSet variable="total-ticks">
+          <value value="260"></value>
+        </enumeratedValueSet>
+        <steppedValueSet variable="learning-rate" first="0.1" step="0.1" last="0.5"></steppedValueSet>
+        <steppedValueSet variable="pairs-per-tick" first="10" step="10" last="50"></steppedValueSet>
+        <steppedValueSet variable="confidence-threshold" first="0.1" step="0.1" last="2"></steppedValueSet>
+        <enumeratedValueSet variable="influence-type">
+          <value value="&quot;bc&quot;"></value>
         </enumeratedValueSet>
       </constants>
     </experiment>
